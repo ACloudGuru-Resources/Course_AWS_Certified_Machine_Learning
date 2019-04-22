@@ -55,8 +55,7 @@ Resources:
                   "r = requests.get('http://stream.meetup.com/2/rsvps', stream=True)\n",
                   "for raw_rsvp in r.iter_lines():\n",
                   "\tif raw_rsvp:\n",
-                  "\t\trsvp = json.loads(raw_rsvp)\n",
-                  "\t\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=str(rsvp), PartitionKey=str(uuid.uuid4()))\n",
+                  "\t\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=str(raw_rsvp), PartitionKey=str(uuid.uuid4()))\n",
                   "\n" ] ]
               mode: "000600"
               owner: "ec2-user"
