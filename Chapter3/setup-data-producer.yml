@@ -1,0 +1,98 @@
+Parameters:
+  KinesisDataStream:
+    Description: The name of your Kinesis Data Stream.
+    Type: String
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-0080e4c5bc078760e
+Resources:
+  LnDataProducerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId:
+        Fn::FindInMap:
+        - RegionMap
+        - !Ref AWS::Region
+        - AMI
+      IamInstanceProfile: !Ref LnInstanceProfiler
+      UserData:
+        Fn::Base64:
+          !Join [ "", [
+            "#!/bin/bash -xe\n",
+            "sudo /opt/aws/bin/cfn-init -v ", #use cfn-init to install packages in cloudformation init
+            !Sub "--stack ${AWS::StackName} ",
+            "--resource LnDataProducerInstance ",
+            "--configsets InstallAndConfigure ",
+            !Sub "--region ${AWS::Region}",
+            "\n"] ]
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets: 
+          InstallAndConfigure:
+            - "install_boto3"
+            - "install_requests"
+            - "create_script"
+        install_boto3:
+          commands:
+            test:
+              command: sudo pip install boto3
+        install_requests:
+          commands:
+            test:
+              command: sudo pip install requests
+        create_script:
+          files:
+            "/tmp/stream.py":
+              content: !Join [ "", [ 
+                  "import requests\n",
+                  "import json\n",
+                  "import boto3\n",
+                  "import uuid\n",
+
+                  "client = boto3.client('kinesis', region_name='", !Sub "${AWS::Region}", "')\n",
+                  "r = requests.get('http://stream.meetup.com/2/rsvps', stream=True)\n",
+                  "for raw_rsvp in r.iter_lines():\n",
+                  "\tif raw_rsvp:\n",
+                  "\t\trsvp = json.loads(raw_rsvp)\n",
+                  "\t\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=str(rsvp), PartitionKey=str(uuid.uuid4()))\n",
+                  "\n" ] ]
+              mode: "000600"
+              owner: "ec2-user"
+              group: "ec2-user"
+          commands:
+            test:
+              command: python /tmp/stream.py
+  LnInstanceProfiler:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles:
+        - !Ref LnDataProducerRole
+  LnKinesisPolicy:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyDocument:
+        Statement: 
+          - 
+            Effect: "Allow"
+            Action: 
+              - "kinesis:*"
+            Resource: 
+              - "*"
+      PolicyName: "kinesis-full-access-policy-lab-ml-specialty-course"
+      Roles: 
+        - !Ref LnDataProducerRole
+  LnDataProducerRole:  
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      RoleName: data-producer-role-kinesis-lab-ml-specialty-course
