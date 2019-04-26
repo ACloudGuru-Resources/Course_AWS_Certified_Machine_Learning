@@ -50,12 +50,16 @@ Resources:
                   "import json\n",
                   "import boto3\n",
                   "import uuid\n",
+                  "import time\n",
+                  "import random\n",
 
                   "client = boto3.client('kinesis', region_name='", !Sub "${AWS::Region}", "')\n",
-                  "r = requests.get('http://stream.meetup.com/2/rsvps', stream=True)\n",
-                  "for raw_rsvp in r.iter_lines():\n",
-                  "\tif raw_rsvp:\n",
-                  "\t\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=str(raw_rsvp), PartitionKey=str(uuid.uuid4()))\n",
+                  "partition_key = str(uuid.uuid4())\n",
+                  "while True:\n",
+                  "\tr = requests.get('https://randomuser.me/api/?exc=login')\n",
+                  "\tdata = json.dumps(r.json())\n",
+                  "\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=data, PartitionKey=partition_key)\n",
+                  "\ttime.sleep(random.uniform(0, 1))\n",
                   "\n" ] ]
               mode: "000600"
               owner: "ec2-user"
