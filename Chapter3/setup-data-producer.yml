@@ -6,6 +6,12 @@ Mappings:
   RegionMap:
     us-east-1:
       AMI: ami-0080e4c5bc078760e
+    us-east-2:
+      AMI: ami-0cd3dfa4e37921605
+    us-west-1:
+      AMI: ami-0ec6517f6edbf8044
+    us-west-2:
+      AMI: ami-01e24be29428c15b2
 Resources:
   LnDataProducerInstance:
     Type: AWS::EC2::Instance
