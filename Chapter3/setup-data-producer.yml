@@ -86,10 +86,12 @@ Resources:
           - 
             Effect: "Allow"
             Action: 
-              - "kinesis:*"
+              - "kinesis:DescribeStream"
+              - "kinesis:PutRecord"
+              - "kinesis:PutRecords"
             Resource: 
-              - "*"
-      PolicyName: "kinesis-full-access-policy-lab-ml-specialty-course"
+              - !Sub "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${KinesisDataStream}"
+      PolicyName: "kinesis-put-records-policy-lab-ml-specialty-course"
       Roles: 
         - !Ref LnDataProducerRole
   LnDataProducerRole:  
