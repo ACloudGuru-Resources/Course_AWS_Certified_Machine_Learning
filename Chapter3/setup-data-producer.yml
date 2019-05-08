@@ -62,7 +62,7 @@ Resources:
                   "client = boto3.client('kinesis', region_name='", !Sub "${AWS::Region}", "')\n",
                   "partition_key = str(uuid.uuid4())\n",
                   "while True:\n",
-                  "\tr = requests.get('https://randomuser.me/api/?exc=login')\n",
+                  "\tr = requests.get('https://randomuser.me/api/?exc=login?nat=au,br,ca,ch,de,dk,es,fi,fr,gb,ie,ir,no,nl,nz,tr,us')\n",
                   "\tdata = json.dumps(r.json())\n",
                   "\tresponse = client.put_record(StreamName='", !Sub "${KinesisDataStream}", "', Data=data, PartitionKey=partition_key)\n",
                   "\ttime.sleep(random.uniform(0, 1))\n",
