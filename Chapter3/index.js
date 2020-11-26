@@ -4,7 +4,7 @@ console.log('Loading function');
 exports.handler = (event, context, callback) => {
     /* Process the list of records and transform them */
     
-    let buff = new Buffer('\n');  
+    let buff = Buffer.from('\n');
     let base64data = buff.toString('base64');
     
     const output = event.records.map((record) => ({
